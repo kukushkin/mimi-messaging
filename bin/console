@@ -1,0 +1,7 @@
+#!/usr/bin/env ruby
+
+require 'bundler/setup'
+require 'mimi/messaging'
+
+require 'pry'
+Pry.start
