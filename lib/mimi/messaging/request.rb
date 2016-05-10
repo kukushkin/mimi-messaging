@@ -20,7 +20,7 @@ module Mimi
       end
 
       def canonical_name
-        "#{type.to_s.upcase} #{request_processor.resource_name}\##{method_name}"
+        "#{type.to_s.upcase} #{request_processor.resource_name}/#{method_name}"
       end
 
       def params_symbolized
