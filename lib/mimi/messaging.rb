@@ -107,8 +107,6 @@ module Mimi
 end # module Mimi
 
 require_relative 'messaging/version'
-require_relative 'messaging/packer'
-
 require_relative 'messaging/errors'
 require_relative 'messaging/connection'
 require_relative 'messaging/message'
@@ -119,3 +117,5 @@ require_relative 'messaging/model'
 require_relative 'messaging/model_provider'
 require_relative 'messaging/notification'
 require_relative 'messaging/listener'
+require_relative 'messaging/msgpack/type_packer'
+require_relative 'messaging/msgpack/msgpack_ext'

@@ -28,6 +28,7 @@ Gem::Specification.new do |spec|
   spec.require_paths = ['lib']
 
   spec.add_dependency 'mimi-core', '~> 0.1'
+  spec.add_dependency 'mimi-logger', '~> 0.1'
   spec.add_dependency 'bunny', '~> 2.3'
   spec.add_dependency 'msgpack', '~> 0.7'
 
