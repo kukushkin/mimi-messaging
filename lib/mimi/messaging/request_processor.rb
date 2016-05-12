@@ -46,22 +46,30 @@ module Mimi
         raise "#{name} already started" if started?
         logger.debug "#{self} starting to serve '#{resource_name}' (#{exposed_methods})"
         @queue = construct_queue
-        @consumer = @queue.subscribe(manual_ack: true) do |d, m, p|
-          begin
-            new(d, m, p)
-          rescue StandardError => e
-            logger.error e.to_s
-            logger.debug e.backtrace.join("\n")
-          ensure
-            @consumer.channel.ack(d.delivery_tag) if @consumer.channel && @consumer.channel.active
+        @consumer_mutex = Mutex.new
+        @consumer_mutex.synchronize do
+          @consumer = @queue.subscribe(manual_ack: true) do |d, m, p|
+            begin
+              new(d, m, p)
+            rescue StandardError => e
+              logger.error e.to_s
+              logger.debug e.backtrace.join("\n")
+            ensure
+              @consumer_mutex.synchronize do
+                @consumer.channel.ack(d.delivery_tag) if @consumer.channel && @consumer.channel.active
+              end
+            end
           end
         end
+        # consumer created, mutex released
       end
 
       def self.stop
         return if abstract?
         raise "#{name} already stopped" unless started?
-        @consumer.cancel if @consumer
+        @consumer_mutex.synchronize do
+          @consumer.cancel if @consumer
+        end
         @consumer = nil
         @queue = nil
         @channel = nil
