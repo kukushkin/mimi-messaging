@@ -57,6 +57,10 @@ module Mimi
         serialize model_class_scoped.find(id)
       end
 
+      def find
+        serialize model_class_scoped.find_by!(params)
+      end
+
       def destroy(id:)
         model_class_scoped.find(id)
         raise "#{self.class}#destroy is not implemented"
