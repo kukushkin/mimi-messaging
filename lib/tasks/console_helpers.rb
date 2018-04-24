@@ -35,7 +35,7 @@ def get(queue_and_method_name = nil, params = {})
   return help_get unless queue_and_method_name
   queue_name, method_name = queue_and_method_name.split('/')
   message_class = message_class_for(queue_name)
-  puts "GET #{queue_name}/#{method_name}: #{params} (#{message_class.inspect})"
+  puts "GET #{queue_name}/#{method_name}: #{params}"
   ts = Time.now
   result = message_class.get(method_name, params, timeout: get_current_timeout)
   puts 'Completed in %.1fms' % ((Time.now - ts) * 1000.0)
@@ -79,7 +79,7 @@ def listen(notification_name = nil, *method_names)
   end
   method_names.each do |method_name|
     listener_class.send :define_method, method_name.to_sym do
-      puts "** LISTEN #{request.canonical_name}: #{params}"
+      puts "LISTEN #{request.canonical_name}: #{params}"
     end
     puts "Listener for '#{notification_name}/#{method_name}' installed"
   end
