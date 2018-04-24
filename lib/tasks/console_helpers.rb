@@ -58,6 +58,7 @@ def post(queue_and_method_name = nil, params = {})
   message_class = message_class_for(queue_name)
   puts "POST #{queue_name}/#{method_name}: #{params}"
   message_class.post(method_name, params)
+  nil
 end
 
 def help_post
@@ -74,15 +75,14 @@ def listen(notification_name = nil, *method_names)
   return help_listen unless notification_name
   listener_class = Class.new(Mimi::Messaging::Listener)
   listener_class.notification(notification_name)
-  listener_class.before do
-    logger.info "** #{request.canonical_name}: #{params}"
-  end
   method_names.each do |method_name|
     listener_class.send :define_method, method_name.to_sym do
       puts "LISTEN #{request.canonical_name}: #{params}"
     end
-    puts "Listener for '#{notification_name}/#{method_name}' installed"
+    puts "Listener for '#{notification_name}/#{method_name}' registered"
   end
+  listener_class.start
+  puts "Listener for '#{notification_name}' started"
   nil
 end
 
