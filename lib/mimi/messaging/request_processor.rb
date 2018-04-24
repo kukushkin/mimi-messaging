@@ -96,7 +96,7 @@ module Mimi
       #
       # @param headers [Hash,nil] message headers
       #
-      def initialize_initialize_logging_context!(headers)
+      def initialize_logging_context!(headers)
         context_id = (headers || {})[Mimi::Messaging::CONTEXT_ID_KEY]
         if context_id
           logger.context_id = context_id
