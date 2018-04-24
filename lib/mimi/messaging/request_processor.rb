@@ -98,11 +98,8 @@ module Mimi
       #
       def initialize_logging_context!(headers)
         context_id = (headers || {})[Mimi::Messaging::CONTEXT_ID_KEY]
-        if context_id
-          logger.context_id = context_id
-        else
-          logger.new_context_id!
-        end
+        return logger.new_context! unless context_id
+        logger.context_id = context_id
       end
 
       # Request logger
