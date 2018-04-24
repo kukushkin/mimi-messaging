@@ -77,7 +77,7 @@ def listen(notification_name = nil, *method_names)
   listener_class.notification(notification_name)
   method_names.each do |method_name|
     listener_class.send :define_method, method_name.to_sym do
-      puts "LISTEN #{request.canonical_name}: #{params}"
+      puts "LISTEN #{listener_class.resource_name}/#{request.method_name}: #{params}"
     end
     puts "Listener for '#{notification_name}/#{method_name}' registered"
   end
