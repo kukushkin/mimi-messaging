@@ -14,7 +14,10 @@ module Mimi
       end
 
       def self.broadcast(name, data = {}, opts = {})
-        headers = { method_name: name.to_s, Mimi::Messaging::CONTEXT_ID_KEY => logger.context_id }
+        headers = {
+          method_name: name.to_s,
+          Mimi::Messaging::CONTEXT_ID_KEY => Mimi::Messaging.logger.context_id
+        }
         Mimi::Messaging.broadcast(
           notification_name, Message.encode(data), opts.merge(headers: headers)
         )

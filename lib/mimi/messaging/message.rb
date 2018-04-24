@@ -17,7 +17,10 @@ module Mimi
       end
 
       def self.get(name, data = {}, opts = {})
-        headers = { method_name: name.to_s, Mimi::Messaging::CONTEXT_ID_KEY => logger.context_id }
+        headers = {
+          method_name: name.to_s,
+          Mimi::Messaging::CONTEXT_ID_KEY => Mimi::Messaging.logger.context_id
+        }
         _d, _m, response = Mimi::Messaging.get(
           queue_name, encode(data), opts.deep_merge(headers: headers)
         )
@@ -28,7 +31,10 @@ module Mimi
       end
 
       def self.post(name, data = {}, opts = {})
-        headers = { method_name: name.to_s, Mimi::Messaging::CONTEXT_ID_KEY => logger.context_id }
+        headers = {
+          method_name: name.to_s,
+          Mimi::Messaging::CONTEXT_ID_KEY => Mimi::Messaging.logger.context_id
+        }
         Mimi::Messaging.post(
           queue_name, encode(data), opts.deep_merge(headers: headers)
         )
