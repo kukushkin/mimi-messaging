@@ -77,6 +77,7 @@ module Mimi
       end
 
       def initialize(d, m, p)
+        initialize_logging_context!(m.headers)
         @request = Mimi::Messaging::Request.new(self.class, d, m, p)
         @result = nil
         method_name = request.method_name
@@ -86,6 +87,21 @@ module Mimi
           end
         rescue StandardError => e
           __execute_error_handlers(e)
+        end
+      end
+
+      # Initializes logging context.
+      #
+      # Starts a new logging contenxt or inherits a context id from the message headers.
+      #
+      # @param headers [Hash,nil] message headers
+      #
+      def initialize_initialize_logging_context!(headers)
+        context_id = (headers || {})[Mimi::Messaging::CONTEXT_ID_KEY]
+        if context_id
+          logger.context_id = context_id
+        else
+          logger.new_context_id!
         end
       end
 

@@ -6,6 +6,9 @@ module Mimi
     include Mimi::Core::Module
     include Mimi::Logger::Instance
 
+    # key in the message headers that is used to pass context id
+    CONTEXT_ID_KEY = 'c'.freeze
+
     default_options(
       require_files: 'app/messaging/**/*.rb',
       mq_host: 'localhost',
