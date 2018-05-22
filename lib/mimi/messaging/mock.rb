@@ -8,7 +8,5 @@
 require_relative 'mock/connection'
 require_relative 'mock/request_processor'
 
-Mimi::Messaging.remove_const(:Connection)
+Mimi::Messaging.send :remove_const, :Connection
 Mimi::Messaging::Connection = Mimi::Messaging::MockConnection
-Mimi::Messaging.remove_const(:RequestProcessor)
-Mimi::Messaging::RequestProcessor = Mimi::Messaging::MockRequestProcessor

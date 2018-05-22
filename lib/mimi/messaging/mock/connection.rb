@@ -68,6 +68,11 @@ module Mimi
         channel.broadcast(queue_name, raw_message, params)
       end
 
+      class MockQueue
+        def initialize(*)
+        end
+      end
+
       class MockChannel
         attr_reader :options, :connection
 
@@ -84,7 +89,7 @@ module Mimi
         end
 
         def create_queue(name, opts = {})
-          raise "Not implemented"
+          MockQueue.new(name, opts)
         end
 
         def reply_queue
