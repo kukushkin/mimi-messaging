@@ -42,7 +42,7 @@ module Mimi
       #
       # @return [Mimi::Messaging::Message]
       #
-      def self.get(method_name, message)
+      def self.get(method_name, message = {})
         metadata    = Mimi::Messaging::Message.new(
           correlation_id: 1,
           reply_to: 'mock_client',
