@@ -1,7 +1,7 @@
 module Mimi
   module Messaging
     class RequestProcessor
-      attr_reader :result
+      attr_reader :result, :request
 
       def self.started?
         !@consumer.nil?
@@ -54,7 +54,7 @@ module Mimi
         d           = Mimi::Messaging::Message.new()
         raw_message = Mimi::Messaging::Message.new(message).to_msgpack
         request_processor = new(d, metadata, raw_message)
-        request_processor.result
+        request_processor.request.response
       end
 
       # MockRequestProcessor helper POST method
