@@ -20,7 +20,8 @@ module Mimi
           port: params[:mq_port],
           username: params[:mq_username],
           password: params[:mq_password],
-          vhost: params[:mq_vhost]
+          vhost: params[:mq_vhost],
+          logger: Mimi::Messaging.logger
         }
         @connection = Bunny.new(bunny_params)
       end
