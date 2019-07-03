@@ -1,8 +1,6 @@
-# mimi-messaging
+# [WIP] mimi-messaging
 
-Communications via RabbitMQ for [mimi](https://github.com/kukushkin/mimi).
-
-[in development]
+Interservice communication via message bus for microservices.
 
 
 ## License
