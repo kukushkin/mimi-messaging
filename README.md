@@ -11,7 +11,7 @@ patterns with "at-least-once" message delivery guarantees.
 
 ## Why
 
-TBD: Why HTTP is a bad choice for interservice communication?
+[Why HTTP is a bad choice for interservice communication?](docs/Why_HTTP_is_a_bad_choice.md)
 
 TBD: Message bus pro's and con's.
 
