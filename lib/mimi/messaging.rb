@@ -7,9 +7,22 @@ require_relative "messaging/memory_adapter"
 require_relative "messaging/json_serializer"
 
 module Mimi
+  #
+  # Mimi::Messaging implements a messaging layer for the application.
+  #
   module Messaging
     #
-    # Configure the Messaging module
+    # Configure up the Messaging module
+    #
+    # Messaging layer configuration for logger, message serializer etc.
+    #
+    def self.use(options)
+      @serializer = options[:serializer] if options.key?(:serializer)
+      @logger = options[:logger] if options.key?(:logger)
+    end
+
+    #
+    # Configure the Messaging adapter
     #
     # @param options [Hash]
     # @option options [Logger,Mimi::Logger] :logger
@@ -47,6 +60,7 @@ module Mimi
     # Starts the Messaging module
     #
     def self.start
+      adapter.register_message_serializer(@serializer) if @serializer
       adapter.start
     end
 
@@ -54,6 +68,42 @@ module Mimi
     #
     def self.stop
       adapter.stop
+    end
+
+    # Returns configured logger
+    #
+    # @return [Logger] or compatible
+    #
+    def self.logger
+      @logger
+    end
+
+    def self.command(target, message = {}, opts = {})
+      adapter.command(target, message, opts)
+    end
+
+    def self.query(target, message = {}, opts = {})
+      adapter.query(target, message, opts)
+    end
+
+    def self.broadcast(target, message = {}, opts = {})
+      adapter.broadcast(target, message, opts)
+    end
+
+    def self.register_command_processor(target_base, processor, opts = {})
+      adapter.register_command_processor(target_base, processor, opts)
+    end
+
+    def self.register_query_processor(target_base, processor, opts = {})
+      adapter.register_query_processor(target_base, processor, opts)
+    end
+
+    def self.register_event_processor(event_topic, processor, opts = {})
+      adapter.register_event_processor(event_topic, processor, opts)
+    end
+
+    def self.register_event_processor_with_queue(event_topic, queue_name, processor, opts = {})
+      adapter.register_event_processor_with_queue(event_topic, queue_name, processor, opts)
     end
   end # module Messaging
 end # module Mimi
