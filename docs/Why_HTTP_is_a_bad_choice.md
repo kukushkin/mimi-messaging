@@ -7,9 +7,10 @@ Downsides of HTTP:
   * timeouts
   * retries
 * additional work required:
-* network
-* service discovery
-* routing
-* authentication/authorization
+  * network
+  * service discovery
+  * routing
+  * load balancing
+  * authentication/authorization
 
 
