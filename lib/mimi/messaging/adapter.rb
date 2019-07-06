@@ -3,7 +3,20 @@
 module Mimi
   module Messaging
     #
-    # An abstract messaging Adapter
+    # An abstract messaging Adapter.
+    #
+    # An adapter implementation must implement the following methods:
+    # * #start()
+    # * #stop()
+    # * #command(target, message, opts)
+    # * #query(target, message, opts)
+    # * #broadcast(target, message, opts)
+    # * #register_command_processor(target_base, message, opts)
+    # * #register_query_processor(target_base, message, opts)
+    # * #register_event_processor(event_topic, message, opts)
+    # * #register_event_processor_with_queue(event_topic, queue_name, message, opts)
+    #
+    # An adapter implementation must register itself using `.register_adapter_name` method.
     #
     class Adapter
       #
@@ -16,12 +29,11 @@ module Mimi
         if Mimi::Messaging::Adapter.registered_adapters.key?(adapter_name)
           raise "Mimi::Messaging adapter '#{adapter_name}' is already registered"
         end
+
         Mimi::Messaging::Adapter.registered_adapters[adapter_name] = self
       end
 
       # Returns a Hash containing all registered adapters.
-      #
-      # The Hash
       #
       # @return [Hash{String => Class < Mimi::Messaging::Adapter}]
       #
@@ -29,22 +41,22 @@ module Mimi
         @registered_adapters ||= {}
       end
 
-      #
       # Creates an Adapter instance
+      #
+      # @param params [Hash] adapter-specific configuration parameters
       #
       def initialize(params = {})
       end
 
-      # Opens the connection and then starts all request processors and event listeners.
+      # Starts the adapter.
       #
-      # All the request processors, event listeners and a message serializer must be
-      # registered before the adapter is started.
+      # All the message processors must be registered after the adapter is started.
       #
       def start
         raise "Method #start() is not implemented by #{self.class}"
       end
 
-      # Stops all request processors and event listeners and then closes the connection
+      # Stops all message processors and then stops the adapter.
       #
       def stop
         raise "Method #stop() is not implemented by #{self.class}"
@@ -59,10 +71,9 @@ module Mimi
       # @return nil
       # @raise [SomeError]
       #
-      def command(target, message, opts = {})
-        raise "Method #command() is not implemented by #{self.class}"
+      def command(_target, _message, _opts = {})
+        raise "Method #command(target, message, opts) is not implemented by #{self.class}"
       end
-
 
       # Executes the query to the given target and returns response
       #
@@ -73,8 +84,8 @@ module Mimi
       # @return [Hash]
       # @raise [SomeError,TimeoutError]
       #
-      def query(target, message, opts = {})
-        raise "Method #query() is not implemented by #{self.class}"
+      def query(_target, _message, _opts = {})
+        raise "Method #query(target, message, opts) is not implemented by #{self.class}"
       end
 
       # Broadcasts the event with the given target
@@ -83,45 +94,112 @@ module Mimi
       # @param message [Hash]
       # @param opts [Hash] additional options
       #
-      def broadcast(target, message, opts = {})
-        raise "Method #broadcast() is not implemented by #{self.class}"
+      def broadcast(_target, _message, _opts = {})
+        raise "Method #broadcast(target, message, opts) is not implemented by #{self.class}"
       end
 
-      # Registers a request (command and/or query) processor.
+      # Registers a command processor.
       #
-      # Processor must respond to #call() which accepts 2 arguments (method, request).
-      # It must #ack! or #nack! request and it must return a Hash if the request is #query?
+      # Processor must respond to #call_command() which accepts 3 arguments:
+      # (method, message, opts).
       #
-      # If the processor raises an error, the request will be NACK-ed and accepted again
+      # TBD: It must #ack! or #nack! the message.
+      #
+      # If the processor raises an error, the message will be NACK-ed and accepted again
+      # at a later time.
+      #
+      # NOTE: Method must be overloaded by a subclass.
+      #
+      # @param queue_name [String] "<queue>"
+      # @param processor [#call_command()]
+      # @param opts [Hash] additional adapter-specific options
+      #
+      def register_command_processor(_queue_name, processor, _opts = {})
+        # validates processor
+        return if processor.respond_to?(:call_command) && processor.method(:call_command).arity >= 3
+
+        raise(
+          ArgumentError,
+          "Invalid command processor passed to #{self.class}##{__method__}(), " \
+          "expected to respond to #call_command(method_name, request, opts)"
+        )
+      end
+
+      # Registers a query processor.
+      #
+      # Processor must respond to #call_query() which accepts 3 arguments:
+      # (method, message, opts).
+      #
+      # TBD: The #call_query() method should return a Hash (response message)
+      # TBD: It must #ack! or #nack! the message.
+      #
+      # If the processor raises an error, the message will be NACK-ed and accepted again
       # at a later time.
       #
       # @param queue_name [String] "<queue>"
-      # @param processor [#call()]
+      # @param processor [#call_query()]
       # @param opts [Hash] additional adapter-specific options
       #
-      def register_request_processor(queue_name, processor, opts = {})
-        raise "Method #register_request_processor() is not implemented by #{self.class}"
+      def register_query_processor(_queue_name, processor, _opts = {})
+        # validates processor
+        return if processor.respond_to?(:call_query) && processor.method(:call_query).arity >= 3
+
+        raise(
+          ArgumentError,
+          "Invalid query processor passed to #{self.class}##{__method__}(), " \
+          "expected to respond to #call_query(method_name, request, opts)"
+        )
       end
 
-      # Registers an event listener without a queue
+      # Registers an event processor without a queue
+      #
+      # Processor must respond to #call_event() which accepts 3 arguments:
+      # (method, message, opts).
+      #
+      # TBD: It must #ack! or #nack! the message.
+      #
+      # If the processor raises an error, the message will be NACK-ed and accepted again
+      # at a later time.
       #
       # @param event_topic [String] "<topic>"
-      # @param listener [#call()] something responding to #call() with 2 arguments (event_type, event)
+      # @param processor [#call_event()]
       # @param opts [Hash] additional adapter-specific options
       #
-      def register_event_listener(event_topic, listener)
-        raise "Method #register_event_listener() is not implemented by #{self.class}"
+      def register_event_processor(_event_topic, processor, _opts = {})
+        # validates processor
+        return if processor.respond_to?(:call_event) && processor.method(:call_event).arity >= 3
+
+        raise(
+          ArgumentError,
+          "Invalid event processor passed to #{self.class}##{__method__}(), " \
+          "expected to respond to #call_event(method_name, request, opts)"
+        )
       end
 
-      # Registers an event listener with a queue
+      # Registers an event processor with a queue
+      #
+      # Processor must respond to #call_event() which accepts 3 arguments:
+      # (method, message, opts).
+      #
+      # TBD: It must #ack! or #nack! the message.
+      #
+      # If the processor raises an error, the message will be NACK-ed and accepted again
+      # at a later time.
       #
       # @param event_topic [String] "<topic>"
       # @param queue_name [String] "<queue>"
-      # @param listener [#call()] something responding to #call() with 2 arguments (event_type, event)
+      # @param processor [#call_event()]
       # @param opts [Hash] additional adapter-specific options
       #
-      def register_event_listener_with_queue(event_topic, queue_name, listener, opts = {})
-        raise "Method #register_event_listener_with_queue() is not implemented by #{self.class}"
+      def register_event_processor_with_queue(_event_topic, _queue_name, processor, _opts = {})
+        # validates processor
+        return if processor.respond_to?(:call_event) && processor.method(:call_event).arity >= 3
+
+        raise(
+          ArgumentError,
+          "Invalid event processor passed to #{self.class}##{__method__}(), " \
+          "expected to respond to #call_event(method_name, request, opts)"
+        )
       end
 
       # Registers the message serializer
@@ -136,6 +214,7 @@ module Mimi
         if !serializer.respond_to?(:serialize) || !serializer.respond_to?(:deserialize)
           raise "Invalid message serializer passed to #{self.class}"
         end
+
         @serializer = serializer
       end
 
@@ -148,6 +227,7 @@ module Mimi
       #
       def serialize(message)
         raise "Message serializer is not registered in #{self.class}" unless @serializer
+
         @serializer.serialize(message)
       end
 
@@ -158,6 +238,7 @@ module Mimi
       #
       def deserialize(message)
         raise "Message serializer is not registered in #{self.class}" unless @serializer
+
         @serializer.deserialize(message)
       end
     end # class Adapter
