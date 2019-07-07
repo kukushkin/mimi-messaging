@@ -63,6 +63,13 @@ module Mimi
         registered_event_processors_with_queue[event_topic][queue_name] << processor
       end
 
+      def deregister_all_processors
+        @registered_command_processors = {}
+        @registered_query_processors = {}
+        @registered_event_processors = {}
+        @registered_event_processors_with_queue = {}
+      end
+
       private
 
       def dispatch_command(target, message_serialized, _opts = {})

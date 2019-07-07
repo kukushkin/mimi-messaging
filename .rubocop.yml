@@ -52,5 +52,9 @@ Style/RaiseArgs:
 Style/CommentedKeyword:
   Enabled: false
 
+# Allow `!!value` for casting to Boolean
+Style/DoubleNegation:
+  Enabled: false
+
 EmptyMethod:
   EnforcedStyle: expanded

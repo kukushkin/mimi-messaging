@@ -15,6 +15,7 @@ module Mimi
     # * #register_query_processor(target_base, message, opts)
     # * #register_event_processor(event_topic, message, opts)
     # * #register_event_processor_with_queue(event_topic, queue_name, message, opts)
+    # * #deregister_all_proecssors
     #
     # An adapter implementation must register itself using `.register_adapter_name` method.
     #
@@ -33,7 +34,7 @@ module Mimi
         Mimi::Messaging::Adapter.registered_adapters[adapter_name] = self
       end
 
-      # Returns a Hash containing all registered adapters.
+      # Returns a Hash containing all registered adapters
       #
       # @return [Hash{String => Class < Mimi::Messaging::Adapter}]
       #
@@ -51,6 +52,10 @@ module Mimi
       # Starts the adapter.
       #
       # All the message processors must be registered after the adapter is started.
+      # Before the adapter is started it MAY respond with an error to an attempt
+      # to register a message processor.
+      #
+      # Serializer must be registered before any message is sent or received.
       #
       def start
         raise "Method #start() is not implemented by #{self.class}"
@@ -216,6 +221,15 @@ module Mimi
         end
 
         @serializer = serializer
+      end
+
+      # Deregisters all message (command, query and event) processors.
+      #
+      # Stops currently registered processors and stops accepting new messages
+      # for processors.
+      #
+      def deregister_all_processors
+        raise "Method #deregister_all_processors() is not implemented by #{self.class}"
       end
 
       protected
