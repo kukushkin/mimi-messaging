@@ -25,6 +25,7 @@ module Mimi
       def command(target, message, opts = {})
         message_serialized = serialize(message)
         dispatch_command(target, message_serialized, opts)
+        nil
       end
 
       def query(target, message, opts = {})
@@ -33,70 +34,63 @@ module Mimi
         deserialize(response_serialized)
       end
 
-      def broadcast(target, message, opts = {})
+      def event(target, message, opts = {})
         message_serialized = serialize(message)
         dispatch_event(target, message_serialized, opts)
       end
 
-      def register_command_processor(queue_name, processor, _opts = {})
+      def start_request_processor(queue_name, processor, _opts = {})
         super
-        registered_command_processors[queue_name] ||= []
-        registered_command_processors[queue_name] << processor
+        request_processors[queue_name] ||= []
+        request_processors[queue_name] << processor
       end
 
-      def register_query_processor(queue_name, processor, _opts = {})
+      def start_event_processor(event_topic, processor, _opts = {})
         super
-        registered_query_processors[queue_name] ||= []
-        registered_query_processors[queue_name] << processor
+        event_processors[event_topic] ||= []
+        event_processors[event_topic] << processor
       end
 
-      def register_event_processor(event_topic, processor, _opts = {})
+      def start_event_processor_with_queue(event_topic, queue_name, processor, opts = {})
         super
-        registered_event_processors[event_topic] ||= []
-        registered_event_processors[event_topic] << processor
+        event_processors_with_queue[event_topic] ||= {}
+        event_processors_with_queue[event_topic][queue_name] ||= []
+        event_processors_with_queue[event_topic][queue_name] << processor
       end
 
-      def register_event_processor_with_queue(event_topic, queue_name, processor, opts = {})
-        super
-        registered_event_processors_with_queue[event_topic] ||= {}
-        registered_event_processors_with_queue[event_topic][queue_name] ||= []
-        registered_event_processors_with_queue[event_topic][queue_name] << processor
-      end
-
-      def deregister_all_processors
-        @registered_command_processors = {}
-        @registered_query_processors = {}
-        @registered_event_processors = {}
-        @registered_event_processors_with_queue = {}
+      def stop_all_processors
+        @request_processors = {}
+        @event_processors = {}
+        @event_processors_with_queue = {}
       end
 
       private
 
       def dispatch_command(target, message_serialized, _opts = {})
-        target_base, method_name = target.split("/")
+        queue_name, method_name = target.split("/")
         message = deserialize(message_serialized)
-        return unless registered_command_processors[target_base]
+        return unless request_processors[queue_name]
 
         # pick random processor serving the target
-        processor = registered_command_processors[target_base].sample
+        processor = request_processors[queue_name].sample
         processor.call_command(method_name, message, {})
       end
 
       def dispatch_query(target, message_serialized, _opts = {})
-        target_base, method_name = target.split("/")
+        queue_name, method_name = target.split("/")
         message = deserialize(message_serialized)
-        raise Timeout::Error unless registered_query_processors[target_base]
+        raise Timeout::Error unless request_processors[queue_name]
 
         # pick random processor serving the target
-        processor = registered_query_processors[target_base].sample
+        processor = request_processors[queue_name].sample
         response = processor.call_query(method_name, message, {})
         serialize(response)
       end
 
       def dispatch_event(target, message_serialized, _opts = {})
-        target_base, event_type = target.split("/")
-        processors = registered_event_processors[target_base] || []
-        processor_queues = registered_event_processors_with_queue[target_base] || {}
+        event_topic, event_type = target.split("/")
+        processors = event_processors[event_topic] || []
+        processor_queues = event_processors_with_queue[event_topic] || {}
         processor_queues.values.each do |same_queue_processors|
           processors << same_queue_processors.sample
         end
@@ -107,20 +101,16 @@ module Mimi
         end
       end
 
-      def registered_command_processors
-        @registered_command_processors ||= {}
+      def request_processors
+        @request_processors ||= {}
       end
 
-      def registered_query_processors
-        @registered_query_processors ||= {}
+      def event_processors
+        @event_processors ||= {}
       end
 
-      def registered_event_processors
-        @registered_event_processors ||= {}
-      end
-
-      def registered_event_processors_with_queue
-        @registered_event_processors_with_queue ||= {}
+      def event_processors_with_queue
+        @event_processors_with_queue ||= {}
       end
     end # class MemoryAdapter
   end # module Messaging

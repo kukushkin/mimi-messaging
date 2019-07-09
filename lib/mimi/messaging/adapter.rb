@@ -10,12 +10,11 @@ module Mimi
     # * #stop()
     # * #command(target, message, opts)
     # * #query(target, message, opts)
-    # * #broadcast(target, message, opts)
-    # * #register_command_processor(target_base, message, opts)
-    # * #register_query_processor(target_base, message, opts)
-    # * #register_event_processor(event_topic, message, opts)
-    # * #register_event_processor_with_queue(event_topic, queue_name, message, opts)
-    # * #deregister_all_proecssors
+    # * #event(target, message, opts)
+    # * #start_request_processor(target_base, message, opts)
+    # * #start_event_processor(event_topic, message, opts)
+    # * #start_event_processor_with_queue(event_topic, queue_name, message, opts)
+    # * #stop_all_processors
     #
     # An adapter implementation must register itself using `.register_adapter_name` method.
     #
@@ -51,9 +50,9 @@ module Mimi
 
       # Starts the adapter.
       #
-      # All the message processors must be registered after the adapter is started.
+      # All the message processors must be started after the adapter is started.
       # Before the adapter is started it MAY respond with an error to an attempt
-      # to register a message processor.
+      # to start a message processor.
       #
       # Serializer must be registered before any message is sent or received.
       #
@@ -99,14 +98,14 @@ module Mimi
       # @param message [Hash]
       # @param opts [Hash] additional options
       #
-      def broadcast(_target, _message, _opts = {})
-        raise "Method #broadcast(target, message, opts) is not implemented by #{self.class}"
+      def event(_target, _message, _opts = {})
+        raise "Method #event(target, message, opts) is not implemented by #{self.class}"
       end
 
-      # Registers a command processor.
+      # Starts a request (command/query) processor.
       #
-      # Processor must respond to #call_command() which accepts 3 arguments:
-      # (method, message, opts).
+      # Processor must respond to #call_command() AND #call_query()
+      # which accepts 3 arguments: (method, message, opts).
       #
       # TBD: It must #ack! or #nack! the message.
       #
@@ -116,47 +115,26 @@ module Mimi
       # NOTE: Method must be overloaded by a subclass.
       #
       # @param queue_name [String] "<queue>"
-      # @param processor [#call_command()]
+      # @param processor [#call_command(),#call_query()]
       # @param opts [Hash] additional adapter-specific options
       #
-      def register_command_processor(_queue_name, processor, _opts = {})
+      def start_request_processor(_queue_name, processor, _opts = {})
         # validates processor
-        return if processor.respond_to?(:call_command) && processor.method(:call_command).arity >= 3
+        if (
+          processor.respond_to?(:call_command) && processor.method(:call_command).arity >= 3 &&
+          processor.respond_to?(:call_query) && processor.method(:call_query).arity >= 3
+        )
+          return
+        end
 
         raise(
           ArgumentError,
-          "Invalid command processor passed to #{self.class}##{__method__}(), " \
-          "expected to respond to #call_command(method_name, request, opts)"
+          "Invalid request processor passed to #{self.class}##{__method__}(), " \
+          "expected to respond to #call_command(...) AND #call_query(method_name, request, opts)"
         )
       end
 
-      # Registers a query processor.
-      #
-      # Processor must respond to #call_query() which accepts 3 arguments:
-      # (method, message, opts).
-      #
-      # TBD: The #call_query() method should return a Hash (response message)
-      # TBD: It must #ack! or #nack! the message.
-      #
-      # If the processor raises an error, the message will be NACK-ed and accepted again
-      # at a later time.
-      #
-      # @param queue_name [String] "<queue>"
-      # @param processor [#call_query()]
-      # @param opts [Hash] additional adapter-specific options
-      #
-      def register_query_processor(_queue_name, processor, _opts = {})
-        # validates processor
-        return if processor.respond_to?(:call_query) && processor.method(:call_query).arity >= 3
-
-        raise(
-          ArgumentError,
-          "Invalid query processor passed to #{self.class}##{__method__}(), " \
-          "expected to respond to #call_query(method_name, request, opts)"
-        )
-      end
-
-      # Registers an event processor without a queue
+      # Starts an event processor without a queue
       #
       # Processor must respond to #call_event() which accepts 3 arguments:
       # (method, message, opts).
@@ -170,7 +148,7 @@ module Mimi
       # @param processor [#call_event()]
       # @param opts [Hash] additional adapter-specific options
       #
-      def register_event_processor(_event_topic, processor, _opts = {})
+      def start_event_processor(_event_topic, processor, _opts = {})
         # validates processor
         return if processor.respond_to?(:call_event) && processor.method(:call_event).arity >= 3
 
@@ -181,7 +159,7 @@ module Mimi
         )
       end
 
-      # Registers an event processor with a queue
+      # Starts an event processor with a queue
       #
       # Processor must respond to #call_event() which accepts 3 arguments:
       # (method, message, opts).
@@ -196,7 +174,7 @@ module Mimi
       # @param processor [#call_event()]
       # @param opts [Hash] additional adapter-specific options
       #
-      def register_event_processor_with_queue(_event_topic, _queue_name, processor, _opts = {})
+      def start_event_processor_with_queue(_event_topic, _queue_name, processor, _opts = {})
         # validates processor
         return if processor.respond_to?(:call_event) && processor.method(:call_event).arity >= 3
 
@@ -223,13 +201,13 @@ module Mimi
         @serializer = serializer
       end
 
-      # Deregisters all message (command, query and event) processors.
+      # Stops all message (command, query and event) processors.
       #
       # Stops currently registered processors and stops accepting new messages
       # for processors.
       #
-      def deregister_all_processors
-        raise "Method #deregister_all_processors() is not implemented by #{self.class}"
+      def stop_all_processors
+        raise "Method #stop_all_processors() is not implemented by #{self.class}"
       end
 
       protected

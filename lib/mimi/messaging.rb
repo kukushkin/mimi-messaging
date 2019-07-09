@@ -149,7 +149,7 @@ module Mimi
       }.merge(params)
 
       if params[:processors]
-        stop_all_message_processors
+        stop_all_processors
         started!(:processors, false)
       end
 
@@ -204,88 +204,50 @@ module Mimi
     # @param message [Hash]
     # @param opts [Hash] additional options
     #
-    def self.broadcast(target, message = {}, opts = {})
+    def self.event(target, message = {}, opts = {})
       raise ArgumentError, "Invalid target argument" unless TARGET_REGEX.match(target)
       raise ArgumentError, "Invalid message, Hash is expected" unless message.is_a?(Hash)
       raise Error, "Failed to broadcast event, adapter is not started" unless started?(:adapter)
 
-      adapter.broadcast(target, message, opts)
+      adapter.event(target, message, opts)
     end
 
-    # Registers the command processor.
+    # Registers the request (command/query) processor.
     #
     # If the adapter and the processors are started, the processor
     # will be automatically started (registered with the adapter).
     #
-    # Processor must respond to #call_command() which accepts 3 arguments:
-    # (method, message, opts).
+    # Processor must respond to #call_command() AND #call_query()
+    # which accepts 3 arguments: (method, message, opts).
     #
     # TBD: It must #ack! or #nack! the message.
     #
     # If the processor raises an error, the message will be NACK-ed and accepted again
     # at a later time.
     #
-    # @param target_base [String] "<queue>"
+    # @param queue_name [String] "<queue>"
     # @param processor [#call_command()]
     # @param opts [Hash] additional adapter-specific options
     #
-    def self.register_command_processor(target_base, processor, opts = {})
+    def self.register_request_processor(queue_name, processor, opts = {})
       # validates processor
-      if !processor.respond_to?(:call_command) || processor.method(:call_command).arity < 3
+      unless (
+        processor.respond_to?(:call_command) && processor.method(:call_command).arity >= 3 &&
+        processor.respond_to?(:call_query) && processor.method(:call_query).arity >= 3
+      )
         raise(
           ArgumentError,
-          "Invalid command processor passed to .register_command_processor(), " \
-          "expected to respond to #call_command(method_name, request, opts)"
+          "Invalid request processor passed to .register_request_processor(), " \
+          "expected to respond to #call_command(...) AND #call_query(method_name, request, opts)"
         )
       end
 
       message_processor_params = {
-        type: :command,
-        target_base: target_base,
+        type: :request,
+        queue_name: queue_name,
         processor: processor,
         opts: opts.dup,
-        registered: false
-      }
-      if started?(:adapter) && started?(:processors)
-        start_message_processor(message_processor_params)
-      end
-      message_processors << message_processor_params
-    end
-
-    # Registers a query processor.
-    #
-    # If the adapter and the processors are started, the processor
-    # will be automatically started (registered with the adapter).
-    #
-    # Processor must respond to #call_query() which accepts 3 arguments:
-    # (method, message, opts).
-    #
-    # TBD: The #call_query() method should return a Hash (response message)
-    # TBD: It must #ack! or #nack! the message.
-    #
-    # If the processor raises an error, the message will be NACK-ed and accepted again
-    # at a later time.
-    #
-    # @param target_base [String] "<queue>"
-    # @param processor [#call_query()]
-    # @param opts [Hash] additional adapter-specific options
-    #
-    def self.register_query_processor(target_base, processor, opts = {})
-      # validates processor
-      if !processor.respond_to?(:call_query) || processor.method(:call_query).arity < 3
-        raise(
-          ArgumentError,
-          "Invalid query processor passed to .register_query_processor(), " \
-          "expected to respond to #call_query(method_name, request, opts)"
-        )
-      end
-
-      message_processor_params = {
-        type: :query,
-        target_base: target_base,
-        processor: processor,
-        opts: opts.dup,
-        registered: false
+        started: false
       }
       if started?(:adapter) && started?(:processors)
         start_message_processor(message_processor_params)
@@ -325,7 +287,7 @@ module Mimi
         event_topic: event_topic,
         processor: processor,
         opts: opts.dup,
-        registered: false
+        started: false
       }
       if started?(:adapter) && started?(:processors)
         start_message_processor(message_processor_params)
@@ -367,7 +329,7 @@ module Mimi
         queue_name: queue_name,
         processor: processor,
         opts: opts.dup,
-        registered: false
+        started: false
       }
       if started?(:adapter) && started?(:processors)
         start_message_processor(message_processor_params)
@@ -422,29 +384,27 @@ module Mimi
     end
     private_class_method :message_processors
 
-    # Starts (registers) the message processor
+    # Starts the message processor at the configured and started adapter
     #
     # @param message_processor_params [Hash]
     #
     def self.start_message_processor(message_processor_params)
-      return if message_processor_params[:registered] # do not register processor twice
+      return if message_processor_params[:started] # do not start processor twice
 
       p = message_processor_params
       case p[:type]
-      when :command
-        adapter.register_command_processor(p[:target_base], p[:processor], p[:opts])
-      when :query
-        adapter.register_query_processor(p[:target_base], p[:processor], p[:opts])
+      when :request
+        adapter.start_request_processor(p[:queue_name], p[:processor], p[:opts])
       when :event
-        adapter.register_event_processor(p[:event_topic], p[:processor], p[:opts])
+        adapter.start_event_processor(p[:event_topic], p[:processor], p[:opts])
       when :event_with_queue
-        adapter.register_event_processor_with_queue(
+        adapter.start_event_processor_with_queue(
           p[:event_topic], p[:queue_name], p[:processor], p[:opts]
         )
       else
         raise "Unexpected message processor type: #{message_processor[:type].inspect}"
       end
-      message_processor_params[:registered] = true
+      message_processor_params[:started] = true
     end
     private_class_method :start_message_processor
 
@@ -457,9 +417,9 @@ module Mimi
 
     # Stops (deregisters) all message processors
     #
-    def self.stop_all_message_processors
-      adapter.deregister_all_processors
+    def self.stop_all_processors
+      adapter.stop_all_processors
     end
-    private_class_method :stop_all_message_processors
+    private_class_method :stop_all_processors
   end # module Messaging
 end # module Mimi
