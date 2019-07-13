@@ -55,3 +55,5 @@ puts
 
 Mimi::Messaging.event("hello/world", c: 789)
 puts
+
+Mimi::Messaging.stop

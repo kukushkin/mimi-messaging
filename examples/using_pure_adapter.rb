@@ -58,3 +58,5 @@ puts
 
 adapter.event("hello/world", c: 789)
 puts
+
+adapter.stop

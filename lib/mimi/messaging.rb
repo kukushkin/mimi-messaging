@@ -1,10 +1,9 @@
 # frozen_string_literal: true
 
 require "mimi/core"
-require_relative "messaging/adapter"
+require_relative "messaging/adapters"
 require_relative "messaging/errors"
 require_relative "messaging/json_serializer"
-require_relative "messaging/memory_adapter"
 require_relative "messaging/version"
 
 module Mimi
@@ -14,11 +13,17 @@ module Mimi
   # Usage: [TBD]
   #
   module Messaging
-    # Target validation pattern.
+    # Target validation pattern:
     # "[<name>.][...]<name>/<name>"
     # Where <name> consists of valid identifier characters: A-Za-z0-9_
     #
+    # Example:
+    # "shop.orders/list"
+    #
     TARGET_REGEX = %r{^((\w+)\.)*(\w+)\/(\w+)$}.freeze
+
+    # By default Mimi::Messaging logs at given level
+    DEFAULT_LOG_AT_LEVEL = :info
 
     #
     # Configure up the Messaging module
@@ -39,20 +44,23 @@ module Mimi
     # @option options [String,Symbol] :mq_adapter Adapter type, one of "memory", "test" etc
     #
     def self.configure(options)
+      raise ArgumentError, "Hash is expected as options" unless options.is_a?(Hash)
+      raise ArgumentError, ":mq_adapter is expected to be set" unless options.key?(:mq_adapter)
+
       @options = options.dup
       adapter_name = options[:mq_adapter].to_s
-      adapter_class = Mimi::Messaging::Adapter.registered_adapters[adapter_name]
+      adapter_class = Mimi::Messaging::Adapters.registered_adapters[adapter_name]
       unless adapter_class
-        registered_adapter_names = Mimi::Messaging::Adapter.registered_adapters.keys
+        registered_adapter_names = Mimi::Messaging::Adapters.registered_adapters.keys
         raise(
-          Error,
+          ArgumentError,
           "Failed to find adapter with name '#{adapter_name}', " \
           " registered adapters are: #{registered_adapter_names.join(', ')}"
         )
       end
 
       @adapter = adapter_class.new(@options)
-      raise ArgumentError, "Message serializer is not registered" unless @serializer
+      raise Error, "Message serializer is not registered" unless @serializer
 
       @adapter.register_message_serializer(@serializer)
     end
@@ -99,6 +107,8 @@ module Mimi
     #   automatically registers message processors
     #
     def self.start(params = {})
+      adapter # ensures that adapter is configured
+      log("#{name} starting with adapter '#{options[:mq_adapter]}'")
       params = { # defaults
         adapter: true,
         processors: true
@@ -142,7 +152,7 @@ module Mimi
     # @option params [true,false] :adapter (default: true)
     #   deregister all message processors
     #
-    def self.stop
+    def self.stop(params = {})
       params = { # defaults
         adapter: true,
         processors: true
@@ -158,6 +168,7 @@ module Mimi
         started!(:adapter, false)
       end
 
+      log("#{name} stopped")
       true
     end
 
@@ -348,6 +359,20 @@ module Mimi
       @logger
     end
 
+    # Logs with configured logger at configured logging level
+    #
+    # @param message [String]
+    #
+    def self.log(message)
+      return unless logger
+
+      log_at_level = options[:mq_log_at_level] || DEFAULT_LOG_AT_LEVEL
+      log_at_level = log_at_level.to_sym
+      return if log_at_level == :none
+
+      logger.send(log_at_level, message)
+    end
+
     # Returns true if the given subsystem started
     #
     # Example:
@@ -360,6 +385,7 @@ module Mimi
       @started ||= {}
       @started[name]
     end
+    private_class_method :started?
 
     # Sets the state of the given subsystem
     #
@@ -394,10 +420,13 @@ module Mimi
       p = message_processor_params
       case p[:type]
       when :request
+        log "#{self} starting request processor #{p[:processor]}@#{p[:queue_name]}"
         adapter.start_request_processor(p[:queue_name], p[:processor], p[:opts])
       when :event
+        log "#{self} starting event processor #{p[:processor]}@#{p[:event_topic]}"
         adapter.start_event_processor(p[:event_topic], p[:processor], p[:opts])
       when :event_with_queue
+        log "#{self} starting event processor #{p[:processor]}@#{p[:event_topic]}/#{p[:queue_name]}"
         adapter.start_event_processor_with_queue(
           p[:event_topic], p[:queue_name], p[:processor], p[:opts]
         )
@@ -418,8 +447,14 @@ module Mimi
     # Stops (deregisters) all message processors
     #
     def self.stop_all_processors
+      log "#{self} stopping all message processors"
       adapter.stop_all_processors
     end
     private_class_method :stop_all_processors
+
+    # Resets the internal state, private
+    #
+    def self.reset
+    end
   end # module Messaging
 end # module Mimi

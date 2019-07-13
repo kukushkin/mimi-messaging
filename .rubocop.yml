@@ -27,6 +27,12 @@ Metrics/LineLength:
 Metrics/MethodLength:
   Max: 25
 
+Metrics/AbcSize:
+  Max: 25
+
+Metrics/ModuleLength:
+  Max: 300
+
 Naming/FileName:
   Exclude:
     - .simplecov

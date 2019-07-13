@@ -18,5 +18,10 @@ module Mimi
     # or authentication/authorization at message broker failed.
     #
     class ConnectionError < Error; end
+
+    # An error raised to indicate that the message should be NACK-ed, but
+    # no additional error logging or processing should happen.
+    #
+    class NACK < Error; end
   end # module Messaging
 end # module Mimi
