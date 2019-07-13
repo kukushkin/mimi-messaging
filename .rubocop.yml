@@ -1,0 +1,66 @@
+---
+
+require:
+  - rubocop-performance
+
+AllCops:
+  Exclude:
+    - tmp/**/*
+
+  DisplayCopNames: true
+  DisplayStyleGuide: true
+
+  TargetRubyVersion: 2.5
+
+Layout/ExtraSpacing:
+  AllowForAlignment: false
+
+Lint/InterpolationCheck:
+  Enabled: false
+
+Metrics:
+  Enabled: true
+
+Metrics/LineLength:
+  Max: 100
+
+Metrics/MethodLength:
+  Max: 25
+
+Metrics/AbcSize:
+  Max: 25
+
+Metrics/ModuleLength:
+  Max: 300
+
+Naming/FileName:
+  Exclude:
+    - .simplecov
+
+TrivialAccessors:
+  ExactNameMatch: true
+
+Style/ModuleFunction:
+  EnforcedStyle: extend_self
+
+# https://github.com/bbatsov/rubocop/pull/72
+Style/AsciiComments:
+  Enabled: false
+
+Style/StringLiterals:
+  EnforcedStyle: double_quotes
+
+# Don't see why storing context information in the exception is a bad thing
+Style/RaiseArgs:
+  Enabled: false
+
+# Allow adding comments at `end` of classes and modules
+Style/CommentedKeyword:
+  Enabled: false
+
+# Allow `!!value` for casting to Boolean
+Style/DoubleNegation:
+  Enabled: false
+
+EmptyMethod:
+  EnforcedStyle: expanded

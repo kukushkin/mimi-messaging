@@ -1,4 +1,3 @@
-# coding: utf-8
 lib = File.expand_path('../lib', __FILE__)
 $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
 require 'mimi/messaging/version'
@@ -9,8 +8,8 @@ Gem::Specification.new do |spec|
   spec.authors       = ['Alex Kukushkin']
   spec.email         = ['alex@kukushk.in']
 
-  spec.summary       = 'Communications via RabbitMQ for mimi'
-  spec.description   = 'Communications via RabbitMQ for mimi'
+  spec.summary       = 'Interservice communication via message bus for microservices'
+  spec.description   = 'Interservice communication via message bus for microservices'
   spec.homepage      = 'https://github.com/kukushkin/mimi-messaging'
   spec.license       = 'MIT'
 
@@ -22,18 +21,19 @@ Gem::Specification.new do |spec|
     raise 'RubyGems 2.0 or newer is required to protect against public gem pushes.'
   end
 
-  spec.files         = `git ls-files -z`.split("\x0").reject { |f| f.match(%r{^(test|spec|features)/}) }
-  spec.bindir        = 'exe'
+  # Specify which files should be added to the gem when it is released.
+  # The `git ls-files -z` loads the files in the RubyGem that have been added into git.
+  spec.files         = Dir.chdir(File.expand_path('..', __FILE__)) do
+    `git ls-files -z`.split("\x0").reject { |f| f.match(%r{^(test|spec|features)/}) }
+  end
+  spec.bindir        = "exe"
   spec.executables   = spec.files.grep(%r{^exe/}) { |f| File.basename(f) }
-  spec.require_paths = ['lib']
+  spec.require_paths = ["lib"]
 
-  spec.add_dependency 'bunny', '~> 2.9'
-  spec.add_dependency 'mimi-core', '~> 0.1'
-  spec.add_dependency 'mimi-logger', '~> 0.2', '>= 0.2.3'
-  spec.add_dependency 'msgpack', '~> 1.2'
+  spec.add_dependency "mimi-core", "~> 1.1"
 
-  spec.add_development_dependency 'bundler', '~> 1.11'
-  spec.add_development_dependency 'pry', '~> 0.10'
-  spec.add_development_dependency 'rake', '~> 10.0'
-  spec.add_development_dependency 'rspec', '~> 3.0'
+  spec.add_development_dependency "bundler", "~> 2.0"
+  spec.add_development_dependency "pry", "~> 0.12"
+  spec.add_development_dependency "rake", "~> 10.0"
+  spec.add_development_dependency "rspec", "~> 3.0"
 end
