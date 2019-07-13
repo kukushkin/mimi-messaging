@@ -13,7 +13,7 @@ AllCops:
   TargetRubyVersion: 2.5
 
 Layout/ExtraSpacing:
-  AllowForAlignment: false
+  AllowForAlignment: true
 
 Lint/InterpolationCheck:
   Enabled: false
