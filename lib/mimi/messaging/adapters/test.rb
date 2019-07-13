@@ -31,12 +31,12 @@ module Mimi
           true
         end
 
-        def start_event_processor(event_topic, processor, _opts = {})
+        def start_event_processor(topic_name, processor, _opts = {})
           super
           true
         end
 
-        def start_event_processor_with_queue(event_topic, queue_name, processor, opts = {})
+        def start_event_processor_with_queue(topic_name, queue_name, processor, opts = {})
           super
           true
         end

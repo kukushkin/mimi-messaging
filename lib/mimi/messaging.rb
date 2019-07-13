@@ -279,11 +279,11 @@ module Mimi
     # If the processor raises an error, the message will be NACK-ed and accepted again
     # at a later time.
     #
-    # @param event_topic [String] "<topic>"
+    # @param topic_name [String] "<topic>"
     # @param processor [#call_event()]
     # @param opts [Hash] additional adapter-specific options
     #
-    def self.register_event_processor(event_topic, processor, opts = {})
+    def self.register_event_processor(topic_name, processor, opts = {})
       # validates processor
       if !processor.respond_to?(:call_event) || processor.method(:call_event).arity < 3
         raise(
@@ -295,7 +295,7 @@ module Mimi
 
       message_processor_params = {
         type: :event,
-        event_topic: event_topic,
+        topic_name: topic_name,
         processor: processor,
         opts: opts.dup,
         started: false
@@ -319,12 +319,12 @@ module Mimi
     # If the processor raises an error, the message will be NACK-ed and accepted again
     # at a later time.
     #
-    # @param event_topic [String] "<topic>"
+    # @param topic_name [String] "<topic>"
     # @param queue_name [String] "<queue>"
     # @param processor [#call_event()]
     # @param opts [Hash] additional adapter-specific options
     #
-    def self.register_event_processor_with_queue(event_topic, queue_name, processor, opts = {})
+    def self.register_event_processor_with_queue(topic_name, queue_name, processor, opts = {})
       # validates processor
       if !processor.respond_to?(:call_event) || processor.method(:call_event).arity < 3
         raise(
@@ -336,7 +336,7 @@ module Mimi
 
       message_processor_params = {
         type: :event,
-        event_topic: event_topic,
+        topic_name: topic_name,
         queue_name: queue_name,
         processor: processor,
         opts: opts.dup,
@@ -423,12 +423,12 @@ module Mimi
         log "#{self} starting request processor #{p[:processor]}@#{p[:queue_name]}"
         adapter.start_request_processor(p[:queue_name], p[:processor], p[:opts])
       when :event
-        log "#{self} starting event processor #{p[:processor]}@#{p[:event_topic]}"
-        adapter.start_event_processor(p[:event_topic], p[:processor], p[:opts])
+        log "#{self} starting event processor #{p[:processor]}@#{p[:topic_name]}"
+        adapter.start_event_processor(p[:topic_name], p[:processor], p[:opts])
       when :event_with_queue
-        log "#{self} starting event processor #{p[:processor]}@#{p[:event_topic]}/#{p[:queue_name]}"
+        log "#{self} starting event processor #{p[:processor]}@#{p[:topic_name]}/#{p[:queue_name]}"
         adapter.start_event_processor_with_queue(
-          p[:event_topic], p[:queue_name], p[:processor], p[:opts]
+          p[:topic_name], p[:queue_name], p[:processor], p[:opts]
         )
       else
         raise "Unexpected message processor type: #{message_processor[:type].inspect}"

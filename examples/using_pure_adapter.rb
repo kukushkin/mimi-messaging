@@ -32,7 +32,7 @@ class HelloProcessor
   end
 end # class HelloProcessor
 
-adapter = Mimi::Messaging::MemoryAdapter.new
+adapter = Mimi::Messaging::Adapters::Memory.new
 adapter.register_message_serializer(Mimi::Messaging::JsonSerializer)
 adapter.start
 

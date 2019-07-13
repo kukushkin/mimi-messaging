@@ -25,11 +25,11 @@ class BasicEventListener
   # Subclass exposes itself by declaring the event topic that it is going to listen for,
   # and an optional :using_queue parameter.
   #
-  def self.topic(event_topic, params = {})
+  def self.topic(topic_name, params = {})
     if params[:using_queue]
-      Mimi::Messaging.register_event_processor_with_queue(event_topic, params[:using_queue], self)
+      Mimi::Messaging.register_event_processor_with_queue(topic_name, params[:using_queue], self)
     else
-      Mimi::Messaging.register_event_processor(event_topic, params[:using_queue], self)
+      Mimi::Messaging.register_event_processor(topic_name, params[:using_queue], self)
     end
   end
 end # class BasicEventListener

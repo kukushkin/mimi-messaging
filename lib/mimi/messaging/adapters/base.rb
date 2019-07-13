@@ -13,8 +13,8 @@ module Mimi
       # * #query(target, message, opts)
       # * #event(target, message, opts)
       # * #start_request_processor(queue_name, message, opts)
-      # * #start_event_processor(event_topic, message, opts)
-      # * #start_event_processor_with_queue(event_topic, queue_name, message, opts)
+      # * #start_event_processor(topic_name, message, opts)
+      # * #start_event_processor_with_queue(topic_name, queue_name, message, opts)
       # * #stop_all_processors
       #
       # An adapter implementation must register itself using `.register_adapter_name` method.
@@ -138,11 +138,11 @@ module Mimi
         # If the processor raises an error, the message will be NACK-ed and accepted again
         # at a later time.
         #
-        # @param event_topic [String] "<topic>"
+        # @param topic_name [String] "<topic>"
         # @param processor [#call_event()]
         # @param opts [Hash] additional adapter-specific options
         #
-        def start_event_processor(_event_topic, processor, _opts = {})
+        def start_event_processor(_topic_name, processor, _opts = {})
           # validates processor
           return if processor.respond_to?(:call_event) && processor.method(:call_event).arity >= 3
 
@@ -163,12 +163,12 @@ module Mimi
         # If the processor raises an error, the message will be NACK-ed and accepted again
         # at a later time.
         #
-        # @param event_topic [String] "<topic>"
+        # @param topic_name [String] "<topic>"
         # @param queue_name [String] "<queue>"
         # @param processor [#call_event()]
         # @param opts [Hash] additional adapter-specific options
         #
-        def start_event_processor_with_queue(_event_topic, _queue_name, processor, _opts = {})
+        def start_event_processor_with_queue(_topic_name, _queue_name, processor, _opts = {})
           # validates processor
           return if processor.respond_to?(:call_event) && processor.method(:call_event).arity >= 3
 

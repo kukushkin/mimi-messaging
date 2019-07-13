@@ -46,17 +46,17 @@ module Mimi
           request_processors[queue_name] << processor
         end
 
-        def start_event_processor(event_topic, processor, _opts = {})
+        def start_event_processor(topic_name, processor, _opts = {})
           super
-          event_processors[event_topic] ||= []
-          event_processors[event_topic] << processor
+          event_processors[topic_name] ||= []
+          event_processors[topic_name] << processor
         end
 
-        def start_event_processor_with_queue(event_topic, queue_name, processor, opts = {})
+        def start_event_processor_with_queue(topic_name, queue_name, processor, opts = {})
           super
-          event_processors_with_queue[event_topic] ||= {}
-          event_processors_with_queue[event_topic][queue_name] ||= []
-          event_processors_with_queue[event_topic][queue_name] << processor
+          event_processors_with_queue[topic_name] ||= {}
+          event_processors_with_queue[topic_name][queue_name] ||= []
+          event_processors_with_queue[topic_name][queue_name] << processor
         end
 
         def stop_all_processors
@@ -89,9 +89,9 @@ module Mimi
         end
 
         def dispatch_event(target, message_serialized, _opts = {})
-          event_topic, event_type = target.split("/")
-          processors = event_processors[event_topic] || []
-          processor_queues = event_processors_with_queue[event_topic] || {}
+          topic_name, event_type = target.split("/")
+          processors = event_processors[topic_name] || []
+          processor_queues = event_processors_with_queue[topic_name] || {}
           processor_queues.values.each do |same_queue_processors|
             processors << same_queue_processors.sample
           end
