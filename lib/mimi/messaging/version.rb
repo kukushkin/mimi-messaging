@@ -2,6 +2,6 @@
 
 module Mimi
   module Messaging
-    VERSION = '0.9.0beta'.freeze
+    VERSION = "1.0.0.alpha0"
   end
 end
