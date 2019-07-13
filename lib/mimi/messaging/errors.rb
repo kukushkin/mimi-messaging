@@ -12,6 +12,10 @@ module Mimi
     #
     class Error < StandardError; end
 
+    # Configuration related errors
+    #
+    class ConfigurationError < Error; end
+
     # Connection level error
     #
     # Raised on errors related to network level, e.g. message broker host not reachable

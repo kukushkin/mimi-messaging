@@ -22,7 +22,7 @@ describe "Mimi::Messaging.configure()" do
   end
 
   it "requires at least :mq_adapter" do
-    expect { Mimi::Messaging.configure({}) }.to raise_error(ArgumentError)
+    expect { Mimi::Messaging.configure({}) }.to raise_error(Mimi::Messaging::ConfigurationError)
     expect { Mimi::Messaging.configure(mq_adapter: adapter_name) }.to_not raise_error
   end
 
@@ -37,7 +37,7 @@ describe "Mimi::Messaging.configure()" do
     let(:adapter_name) { "foobar" }
 
     it "fails to configure" do
-      expect { subject }.to raise_error(ArgumentError)
+      expect { subject }.to raise_error(Mimi::Messaging::ConfigurationError)
     end
   end # when adapter name is not valid
 

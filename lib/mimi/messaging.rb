@@ -45,7 +45,7 @@ module Mimi
     #
     def self.configure(options)
       raise ArgumentError, "Hash is expected as options" unless options.is_a?(Hash)
-      raise ArgumentError, ":mq_adapter is expected to be set" unless options.key?(:mq_adapter)
+      raise ConfigurationError, ":mq_adapter is expected to be set" unless options.key?(:mq_adapter)
 
       @options = options.dup
       adapter_name = options[:mq_adapter].to_s
@@ -53,14 +53,14 @@ module Mimi
       unless adapter_class
         registered_adapter_names = Mimi::Messaging::Adapters.registered_adapters.keys
         raise(
-          ArgumentError,
+          ConfigurationError,
           "Failed to find adapter with name '#{adapter_name}', " \
           " registered adapters are: #{registered_adapter_names.join(', ')}"
         )
       end
 
       @adapter = adapter_class.new(@options)
-      raise Error, "Message serializer is not registered" unless @serializer
+      raise ConfigurationError, "Message serializer is not registered" unless @serializer
 
       @adapter.register_message_serializer(@serializer)
     end
