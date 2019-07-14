@@ -66,7 +66,7 @@ delivers the message to the topic and all the subscribed listeners, if there are
 While producing an event is simple and it only means posting a message to a topic,
 listening for events has two variants:
 
-![Event directly diagram](./img/pattern--event-directly.png)
+![Event directly diagram](./img/pattern--event-direct.png)
 * Listening for events on a topic directly
 
 An application can listen for events on a topic directly. That means that
