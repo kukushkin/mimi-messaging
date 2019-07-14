@@ -4,10 +4,24 @@ Interservice communication via message bus for microservices.
 
 ## What
 
-Mimi::Messaging is a messaging layer for microservice applications.
+`mimi-messaging` is a Messaging layer -- an interservice
+communication layer based on message bus, for connecting microservice applications.
 
-It abstracts the message bus interface, offering you the most common communication
-patterns with "at-least-once" message delivery guarantees.
+`mimi-messaging` offers:
+
+* Most common communication patterns: command, query, event
+* "at-least-once" message delivery guarantees
+* Abstract message bus interface: `mimi-messaging` is not bound to a specific message broker
+implementation like RabbitMQ, it interacts with message broker using an adapter interface and
+there are several available adapters:
+  * [Kafka](https://github.com/kukushkin/mimi-messaging-kafka)
+  * RabbitMQ (TBD)
+  * NATS (TBD)
+  * Amazon SQS/SNS
+  * in-memory (single process)
+
+
+See also: [Overview of Messaging layer properties](docs/Messaging_Layer_Properties.md)
 
 ## Why
 
@@ -25,15 +39,25 @@ Concepts:
 
 ## Setup
 
+```
+gem "mimi-messaging", "~> 1.0"
+gem "mimi-messaging-<ADAPTER>"
+```
+
+```
+require "mimi/messaging"
+require "mimi/messaging/<ADAPTER>"
+
+Mimi::Messaging.use serializer: Mimi::Messaging::JsonSerializer
+Mimi::Messaging.configure mq_adapter: "<ADAPTER>", ... # extra adapter specific options
+Mimi::Messaging.start
+```
+
 ## Usage
 
-## Adapters
-
-* Memory (single process)
-* RabbitMQ
-* Kafka
-* NATS
-* Amazon SNS/SQS
+```
+response = Mimi::Messaging.query("orders/show", id: 123)
+```
 
 ## License
 
