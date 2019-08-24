@@ -12,9 +12,9 @@ module Mimi
       # * #command(target, message, opts)
       # * #query(target, message, opts)
       # * #event(target, message, opts)
-      # * #start_request_processor(queue_name, message, opts)
-      # * #start_event_processor(topic_name, message, opts)
-      # * #start_event_processor_with_queue(topic_name, queue_name, message, opts)
+      # * #start_request_processor(queue_name, processor, opts)
+      # * #start_event_processor(topic_name, processor, opts)
+      # * #start_event_processor_with_queue(topic_name, queue_name, processor, opts)
       # * #stop_all_processors
       #
       # An adapter implementation must register itself using `.register_adapter_name` method.
