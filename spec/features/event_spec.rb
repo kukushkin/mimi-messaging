@@ -5,7 +5,7 @@ require "spec_helper"
 describe "Mimi::Messaging.event()" do
   include_context "configured test adapter"
 
-  let(:target) { "test/method" }
+  let(:target) { "test#method" }
   let(:message) do
     { a: 1 }
   end

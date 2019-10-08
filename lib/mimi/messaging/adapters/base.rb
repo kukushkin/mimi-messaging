@@ -88,7 +88,7 @@ module Mimi
 
         # Broadcasts the event with the given target
         #
-        # @param target [String] "<topic>/<event_type>", e.g. "customers/created"
+        # @param target [String] "<topic>#<event_type>", e.g. "customers#created"
         # @param message [Mimi::Messaging::Message]
         # @param opts [Hash] additional options
         #

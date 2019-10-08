@@ -89,7 +89,7 @@ module Mimi
         end
 
         def dispatch_event(target, message_serialized, _opts = {})
-          topic_name, event_type = target.split("/")
+          topic_name, event_type = target.split("#")
           processors = event_processors[topic_name] || []
           processor_queues = event_processors_with_queue[topic_name] || {}
           processor_queues.values.each do |same_queue_processors|

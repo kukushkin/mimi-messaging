@@ -14,14 +14,23 @@ module Mimi
   # Usage: [TBD]
   #
   module Messaging
-    # Target validation pattern:
+    # Request target validation pattern:
     # "[<name>.][...]<name>/<name>"
     # Where <name> consists of valid identifier characters: A-Za-z0-9_
     #
     # Example:
     # "shop.orders/list"
     #
-    TARGET_REGEX = %r{^((\w+)\.)*(\w+)\/(\w+)$}.freeze
+    REQUEST_TARGET_REGEX = %r{^((\w+)\.)*(\w+)\/(\w+)$}.freeze
+
+    # Event target validation pattern:
+    # "[<name>.][...]<name>#<name>"
+    # Where <name> consists of valid identifier characters: A-Za-z0-9_
+    #
+    # Example:
+    # "shop.orders#created"
+    #
+    EVENT_TARGET_REGEX = %r{^((\w+)\.)*(\w+)\#(\w+)$}.freeze
 
     # By default Mimi::Messaging logs at given level
     DEFAULT_LOG_AT_LEVEL = :info
@@ -185,7 +194,7 @@ module Mimi
     # @return nil
     #
     def self.command(target, message = {}, opts = {})
-      raise ArgumentError, "Invalid target argument" unless TARGET_REGEX.match(target)
+      raise ArgumentError, "Invalid target argument" unless REQUEST_TARGET_REGEX.match(target)
       raise ArgumentError, "Invalid message, Hash or Message is expected" unless message.is_a?(Hash)
       raise Error, "Failed to send command, adapter is not started" unless started?(:adapter)
 
@@ -206,7 +215,7 @@ module Mimi
     # @return [Hash]
     #
     def self.query(target, message = {}, opts = {})
-      raise ArgumentError, "Invalid target argument" unless TARGET_REGEX.match(target)
+      raise ArgumentError, "Invalid target argument" unless REQUEST_TARGET_REGEX.match(target)
       raise ArgumentError, "Invalid message, Hash or Message is expected" unless message.is_a?(Hash)
       raise Error, "Failed to send query, adapter is not started" unless started?(:adapter)
 
@@ -215,12 +224,12 @@ module Mimi
 
     # Broadcasts the event with the given target
     #
-    # @param target [String] "<topic>/<event_type>", e.g. "customers/created"
+    # @param target [String] "<topic>#<event_type>", e.g. "customers#created"
     # @param message [Hash,Mimi::Messaging::Message]
     # @param opts [Hash] additional options
     #
     def self.event(target, message = {}, opts = {})
-      raise ArgumentError, "Invalid target argument" unless TARGET_REGEX.match(target)
+      raise ArgumentError, "Invalid target argument" unless EVENT_TARGET_REGEX.match(target)
       raise ArgumentError, "Invalid message, Hash or Message is expected" unless message.is_a?(Hash)
       raise Error, "Failed to broadcast event, adapter is not started" unless started?(:adapter)
 
