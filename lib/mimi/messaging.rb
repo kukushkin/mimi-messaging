@@ -4,6 +4,7 @@ require "mimi/core"
 require_relative "messaging/adapters"
 require_relative "messaging/errors"
 require_relative "messaging/json_serializer"
+require_relative "messaging/message"
 require_relative "messaging/version"
 
 module Mimi
@@ -185,10 +186,10 @@ module Mimi
     #
     def self.command(target, message = {}, opts = {})
       raise ArgumentError, "Invalid target argument" unless TARGET_REGEX.match(target)
-      raise ArgumentError, "Invalid message, Hash is expected" unless message.is_a?(Hash)
+      raise ArgumentError, "Invalid message, Hash or Message is expected" unless message.is_a?(Hash)
       raise Error, "Failed to send command, adapter is not started" unless started?(:adapter)
 
-      adapter.command(target, message, opts)
+      adapter.command(target, Mimi::Messaging::Message.new(message), opts)
     end
 
     # Executes the query to the given target and returns response
@@ -196,17 +197,17 @@ module Mimi
     # Raises Timeout::Error if the response from the target was not received in time.
     #
     # @param target [String] "<queue>/<method>"
-    # @param message [Hash]
+    # @param message [Hash,Mimi::Messaging::Message]
     # @param opts [Hash] additional options, e.g. :timeout
     #
     # @return [Hash]
     #
     def self.query(target, message = {}, opts = {})
       raise ArgumentError, "Invalid target argument" unless TARGET_REGEX.match(target)
-      raise ArgumentError, "Invalid message, Hash is expected" unless message.is_a?(Hash)
+      raise ArgumentError, "Invalid message, Hash or Message is expected" unless message.is_a?(Hash)
       raise Error, "Failed to send query, adapter is not started" unless started?(:adapter)
 
-      adapter.query(target, message, opts)
+      adapter.query(target, Mimi::Messaging::Message.new(message), opts)
     end
 
     # Broadcasts the event with the given target
@@ -217,10 +218,10 @@ module Mimi
     #
     def self.event(target, message = {}, opts = {})
       raise ArgumentError, "Invalid target argument" unless TARGET_REGEX.match(target)
-      raise ArgumentError, "Invalid message, Hash is expected" unless message.is_a?(Hash)
+      raise ArgumentError, "Invalid message, Hash or Message is expected" unless message.is_a?(Hash)
       raise Error, "Failed to broadcast event, adapter is not started" unless started?(:adapter)
 
-      adapter.event(target, message, opts)
+      adapter.event(target, Mimi::Messaging::Message.new(message), opts)
     end
 
     # Registers the request (command/query) processor.
