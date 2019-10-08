@@ -65,10 +65,11 @@ there are several available adapters:
 
 There are only two hard problems in distributed systems:
 
+```
 2. Exactly-once delivery
 1. Guaranteed order of messages
 2. Exactly-once delivery
-
+```
 
 ## License
 
