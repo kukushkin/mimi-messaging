@@ -57,7 +57,7 @@ there are several available adapters:
 * [Kafka](https://github.com/kukushkin/mimi-messaging-kafka)
 * RabbitMQ (TBD)
 * NATS (TBD)
-* Amazon SQS/SNS
+* [Amazon SQS/SNS](https://github.com/kukushkin/mimi-messaging-sqs_sns)
 * in-memory (single process)
 
 ## Designing apps
