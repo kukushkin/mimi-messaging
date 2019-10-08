@@ -63,7 +63,7 @@ module Mimi
         # Sends the command to the given target
         #
         # @param target [String] "<queue>/<method>"
-        # @param message [Hash]
+        # @param message [Mimi::Messaging::Message]
         # @param opts [Hash] additional options
         #
         # @return nil
@@ -76,7 +76,7 @@ module Mimi
         # Executes the query to the given target and returns response
         #
         # @param target [String] "<queue>/<method>"
-        # @param message [Hash]
+        # @param message [Mimi::Messaging::Message]
         # @param opts [Hash] additional options, e.g. :timeout
         #
         # @return [Hash]
@@ -89,7 +89,7 @@ module Mimi
         # Broadcasts the event with the given target
         #
         # @param target [String] "<topic>/<event_type>", e.g. "customers/created"
-        # @param message [Hash]
+        # @param message [Mimi::Messaging::Message]
         # @param opts [Hash] additional options
         #
         def event(_target, _message, _opts = {})
@@ -124,7 +124,7 @@ module Mimi
           raise(
             ArgumentError,
             "Invalid request processor passed to #{self.class}##{__method__}(), " \
-            "expected to respond to #call_command(...) AND #call_query(method_name, request, opts)"
+            "expected to respond to #call_command(method_name, message, opts) AND #call_query(...)"
           )
         end
 
@@ -149,7 +149,7 @@ module Mimi
           raise(
             ArgumentError,
             "Invalid event processor passed to #{self.class}##{__method__}(), " \
-            "expected to respond to #call_event(method_name, request, opts)"
+            "expected to respond to #call_event(event_type, message, opts)"
           )
         end
 
@@ -175,7 +175,7 @@ module Mimi
           raise(
             ArgumentError,
             "Invalid event processor passed to #{self.class}##{__method__}(), " \
-            "expected to respond to #call_event(method_name, request, opts)"
+            "expected to respond to #call_event(event_type, message, opts)"
           )
         end
 

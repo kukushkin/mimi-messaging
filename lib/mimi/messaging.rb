@@ -179,7 +179,7 @@ module Mimi
     #   Mimi::Messaging.command("users/create", name: "John Smith")
     #
     # @param target [String] "<queue>/<method>"
-    # @param message [Hash]
+    # @param message [Hash,Mimi::Messaging::Message]
     # @param opts [Hash] additional adapter-specific options
     #
     # @return nil
@@ -195,6 +195,9 @@ module Mimi
     # Executes the query to the given target and returns response
     #
     # Raises Timeout::Error if the response from the target was not received in time.
+    #
+    # Example:
+    #   result = Mimi::Messaging.query("users/find", id: 157)
     #
     # @param target [String] "<queue>/<method>"
     # @param message [Hash,Mimi::Messaging::Message]
@@ -213,7 +216,7 @@ module Mimi
     # Broadcasts the event with the given target
     #
     # @param target [String] "<topic>/<event_type>", e.g. "customers/created"
-    # @param message [Hash]
+    # @param message [Hash,Mimi::Messaging::Message]
     # @param opts [Hash] additional options
     #
     def self.event(target, message = {}, opts = {})
