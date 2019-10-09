@@ -23,21 +23,39 @@ module Mimi
         def stop
         end
 
+        # Sends COMMAND to target
+        #
+        # @param target [String]
+        # @param message [Mimi::Messaging::Message]
+        # @param opts [Hash]
+        #
         def command(target, message, opts = {})
-          message_serialized = serialize(message)
-          dispatch_command(target, message_serialized, opts)
+          raise ArgumentError, "Message is expected" unless message.is_a?(Mimi::Messaging::Message)
+          dispatch_command(target, message, opts)
           nil
         end
 
+        # Sends QUERY to target
+        #
+        # @param target [String]
+        # @param message [Mimi::Messaging::Message]
+        # @param opts [Hash]
+        #
         def query(target, message, opts = {})
-          message_serialized = serialize(message)
-          response_serialized = dispatch_query(target, message_serialized, opts)
+          raise ArgumentError, "Message is expected" unless message.is_a?(Mimi::Messaging::Message)
+          response_serialized = dispatch_query(target, message, opts)
           deserialize(response_serialized)
         end
 
+        # Sends EVENT to target
+        #
+        # @param target [String]
+        # @param message [Mimi::Messaging::Message]
+        # @param opts [Hash]
+        #
         def event(target, message, opts = {})
-          message_serialized = serialize(message)
-          dispatch_event(target, message_serialized, opts)
+          raise ArgumentError, "Message is expected" unless message.is_a?(Mimi::Messaging::Message)
+          dispatch_event(target, message, opts)
         end
 
         def start_request_processor(queue_name, processor, _opts = {})
@@ -67,24 +85,35 @@ module Mimi
 
         private
 
-        def dispatch_command(target, message_serialized, _opts = {})
+        # Simulates a transmitted message, following serialization/deserialization:
+        #   message out -> message in
+        #
+        # @param message [Mimi::Messaging::Message]
+        # @return [Mimi::Messaging::Message]
+        #
+        def transmitted_message(message)
+          Mimi::Messaging::Message.new(
+            deserialize(serialize(message)),
+            message.headers
+          )
+        end
+
+        def dispatch_command(target, message, _opts = {})
           queue_name, method_name = target.split("/")
-          message = deserialize(message_serialized)
           return unless request_processors[queue_name]
 
           # pick random processor serving the target
           processor = request_processors[queue_name].sample
-          processor.call_command(method_name, message, {})
+          processor.call_command(method_name, transmitted_message(message), {})
         end
 
-        def dispatch_query(target, message_serialized, _opts = {})
+        def dispatch_query(target, message, _opts = {})
           queue_name, method_name = target.split("/")
-          message = deserialize(message_serialized)
           raise Timeout::Error unless request_processors[queue_name]
 
           # pick random processor serving the target
           processor = request_processors[queue_name].sample
-          response = processor.call_query(method_name, message, {})
+          response = processor.call_query(method_name, transmitted_message(message), {})
           serialize(response)
         end
 
@@ -96,9 +125,8 @@ module Mimi
             processors << same_queue_processors.sample
           end
 
-          message = deserialize(message_serialized)
           processors.each do |processor|
-            processor.call_event(event_type, message, {})
+            processor.call_event(event_type, transmitted_message(message), {})
           end
         end
 
