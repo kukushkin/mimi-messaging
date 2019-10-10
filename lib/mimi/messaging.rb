@@ -464,6 +464,7 @@ module Mimi
     def self.stop_all_processors
       log "#{self} stopping all message processors"
       adapter.stop_all_processors
+      message_processors.each { |p| p[:started] = false }
     end
     private_class_method :stop_all_processors
 
