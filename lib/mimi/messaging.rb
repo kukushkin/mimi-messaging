@@ -452,14 +452,14 @@ module Mimi
     end
     private_class_method :start_message_processor
 
-    # Starts (registers) all message processors
+    # Starts all registered message processors at the adapter
     #
     def self.start_all_message_processors
       message_processors.each { |p| start_message_processor(p) }
     end
     private_class_method :start_all_message_processors
 
-    # Stops (deregisters) all message processors
+    # Stops all registered message processors at the adapter
     #
     def self.stop_all_processors
       log "#{self} stopping all message processors"
@@ -468,9 +468,11 @@ module Mimi
     end
     private_class_method :stop_all_processors
 
-    # Resets the internal state, private
+    # Deregisters all message processors
     #
-    def self.reset
+    def self.unregister_all_processors
+      stop_all_processors
+      message_processors.replace([])
     end
   end # module Messaging
 end # module Mimi
