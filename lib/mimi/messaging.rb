@@ -15,22 +15,24 @@ module Mimi
   #
   module Messaging
     # Request target validation pattern:
-    # "[<name>.][...]<name>/<name>"
-    # Where <name> consists of valid identifier characters: A-Za-z0-9_
+    # "[<name>.][...]<name>/<identifier>"
+    # Where <name> consists of characters: A-Za-z0-9_-
+    # and <method_name> can be any of: A-Za-z0-9_
     #
     # Example:
     # "shop.orders/list"
     #
-    REQUEST_TARGET_REGEX = %r{^((\w+)\.)*(\w+)\/(\w+)$}.freeze
+    REQUEST_TARGET_REGEX = %r{^([\w\-]+\.)*([\w\-]+)\/(\w+)$}.freeze
 
     # Event target validation pattern:
-    # "[<name>.][...]<name>#<name>"
-    # Where <name> consists of valid identifier characters: A-Za-z0-9_
+    # "[<name>.][...]<name>#<identifier>"
+    # Where <name> consists of characters: A-Za-z0-9_-
+    # and <method_name> can be any of: A-Za-z0-9_
     #
     # Example:
     # "shop.orders#created"
     #
-    EVENT_TARGET_REGEX = %r{^((\w+)\.)*(\w+)\#(\w+)$}.freeze
+    EVENT_TARGET_REGEX = %r{^([\w\-]+\.)*([\w\-]+)\#(\w+)$}.freeze
 
     # By default Mimi::Messaging logs at given level
     DEFAULT_LOG_AT_LEVEL = :info
