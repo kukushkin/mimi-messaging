@@ -350,7 +350,7 @@ module Mimi
       end
 
       message_processor_params = {
-        type: :event,
+        type: :event_with_queue,
         topic_name: topic_name,
         queue_name: queue_name,
         processor: processor,
