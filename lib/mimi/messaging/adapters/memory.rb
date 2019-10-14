@@ -117,7 +117,7 @@ module Mimi
           serialize(response)
         end
 
-        def dispatch_event(target, message_serialized, _opts = {})
+        def dispatch_event(target, message, _opts = {})
           topic_name, event_type = target.split("#")
           processors = event_processors[topic_name] || []
           processor_queues = event_processors_with_queue[topic_name] || {}
