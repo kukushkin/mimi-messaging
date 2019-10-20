@@ -45,9 +45,19 @@ Mimi::Messaging.start
 
 ## Usage
 
+Producing messages:
 ```
+# COMMAND
+Mimi::Messaging.command("users/lock", id: "b3cc29c8d2ec68e0")
+
+# QUERY
 response = Mimi::Messaging.query("orders/show", id: 123)
+
+# EVENT
 ```
+
+See (/examples)[/examples] folder for more examples on how to produce and consume messages.
+
 
 ## Adapters
 
@@ -58,7 +68,7 @@ there are several available adapters:
 * RabbitMQ (TBD)
 * NATS (TBD)
 * [Amazon SQS/SNS](https://github.com/kukushkin/mimi-messaging-sqs_sns)
-* in-memory (single process)
+* (in-memory (single process))[lib/mimi/messaging/adapters/memory.rb]
 
 ## Designing apps
 
@@ -70,6 +80,9 @@ There are only two hard problems in distributed systems:
 1. Guaranteed order of messages
 2. Exactly-once delivery
 ```
+
+
+[Messaging API specification format](https://github.com/kukushkin/mimi-messaging-spec)
 
 ## License
 
