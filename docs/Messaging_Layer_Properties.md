@@ -95,7 +95,7 @@ For commands and queries, the target of the message consists of a queue name
 and a method name (e.g. `"customers/create"`).
 
 For events, the target of the message consists of a topic name and an
-event type (e.g. `"customers/created"`).
+event type (e.g. `"customers#created"`).
 
 This allows to model the communication around your business domain concepts,
 and not the implementation details like application or host names.
