@@ -1,6 +1,4 @@
-# Why HTTP is a bad choice for interservice communication
-
-[WIP]
+# [WIP] Why HTTP is a bad choice for interservice communication
 
 Downsides of HTTP:
 * inherently synchronous
@@ -18,3 +16,5 @@ Downsides of HTTP:
 Pro's of HTTP:
 * synchronous communication is simple
 * HTTP as technology is well known by engineers
+* more stable and simpler to setup if the services are not closely deployed (e.g. in different datacenters/regions)
+

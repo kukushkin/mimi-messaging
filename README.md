@@ -1,6 +1,10 @@
-# [WIP] mimi-messaging
+# mimi-messaging
 
 Interservice communication via message bus for microservices.
+
+## Is it production ready?
+
+No. Consider this project a WIP.
 
 ## What
 
@@ -14,6 +18,9 @@ communication layer based on message bus, for connecting microservice applicatio
 See also: [Overview of Messaging layer properties](docs/Messaging_Layer_Properties.md)
 
 ## Why
+
+When it comes to organizing communications between different microservices of a system,
+currently there is only two options: to use HTTP or a message bus.
 
 [Why HTTP is a bad choice for interservice communication?](docs/Why_HTTP_is_a_bad_choice.md)
 
