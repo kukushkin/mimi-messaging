@@ -32,6 +32,10 @@ class HelloProcessor
   end
 end # class HelloProcessor
 
+def mimi_message_from(hash)
+  Mimi::Messaging::Message.new(hash)
+end
+
 adapter = Mimi::Messaging::Adapters::Memory.new
 adapter.register_message_serializer(Mimi::Messaging::JsonSerializer)
 adapter.start
@@ -48,15 +52,15 @@ adapter.start_event_processor_with_queue("hello", "event_queue", HelloProcessor.
 adapter.start_event_processor_with_queue("hello", "event_queue", HelloProcessor.new("H"))
 adapter.start_event_processor_with_queue("hello", "event_queue", HelloProcessor.new("I"))
 
-result = adapter.command("hello/world", a: 123)
+result = adapter.command("hello/world", mimi_message_from(a: 123))
 puts "Response: #{result}"
 puts
 
-result = adapter.query("hello/world", b: 456)
+result = adapter.query("hello/world", mimi_message_from(b: 456))
 puts "Response: #{result}"
 puts
 
-adapter.event("hello/world", c: 789)
+adapter.event("hello/world", mimi_message_from(c: 789))
 puts
 
 adapter.stop

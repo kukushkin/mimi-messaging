@@ -53,7 +53,7 @@ result = Mimi::Messaging.query("hello/world", b: 456)
 puts "Response: #{result}"
 puts
 
-Mimi::Messaging.event("hello/world", c: 789)
+Mimi::Messaging.event("hello#world", c: 789)
 puts
 
 Mimi::Messaging.stop
